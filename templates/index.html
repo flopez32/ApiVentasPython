@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ventas</title>
+
+    <!-- ✅ Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <div class="container mt-5">
+
+        <h1 class="text-center mb-4">🚀 API Ventas</h1>
+
+        <!--  Botones  -->
+        <div class="text-center mb-3">
+            <button class="btn btn-primary" onclick="cargarVentas()">Cargar Ventas</button>
+            <button id="btnCrear" class="btn btn-primary" onclick="crearVenta()">Crear Venta</button>
+            <button id="btnBuscar" class="btn btn-primary" onclick="buscarVenta()">Buscar Venta</button>
+            <button id="btnEliminar" class="btn btn-primary" onclick="eliminarVenta()">Eliminar Ventas</button>
+        </div>
+
+        <!--  TABLA  -->
+        <table class="table table-bordered table-striped text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody id="tablaVentas"></tbody>
+        </table>
+
+    </div>
+
+    <script>
+
+        //  obtener token
+        let token = localStorage.getItem("token");
+        // decodificar token
+        let payload = JSON.parse(atob(token.split('.')[1]));
+        // obtener rol
+        let rol = payload.sub.rol;
+        console.log("ROL:", rol);
+        // ocultar botones si es empleado
+         if (rol === "empleado") {
+            document.getElementById("btnBuscar").style.display = "none";
+            document.getElementById("btnEliminar").style.display = "none";
+}
+
+        function cargarVentas() {
+            fetch("http://127.0.0.1:5000/ventas1")
+                .then(res => res.json())
+                .then(data => {
+
+                    let tabla = document.getElementById("tablaVentas");
+                    tabla.innerHTML = "";
+
+                    data.forEach(venta => {
+
+                        let fila = document.createElement("tr");
+
+                        fila.innerHTML = `
+                            <td>${venta.id}</td>
+                            <td>${venta.nombre}</td>
+                            <td>${venta.producto}</td>
+                            <td>${venta.precio}</td>
+                        `;
+
+                        tabla.appendChild(fila);
+                    });
+                });
+        }
+        function crearVenta() {
+
+        let nombre = prompt("Nombre:");
+        let producto = prompt("Producto:");
+        let precio = prompt("Precio:");
+        let domicilio = prompt("Domicilio:");
+
+    fetch("http://127.0.0.1:5000/ventas", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            nombre,
+            producto,
+            precio: parseFloat(precio),
+            domicilio
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.mensaje);
+        cargarVentas();
+    });
+}
+        function buscarVenta() {
+
+    let id = prompt("Ingrese el ID de la venta:");
+
+    if (!id) {
+        alert("Debe ingresar un ID");
+        return;
+    }
+
+    fetch(`/ventas/${id}`)
+        .then(res => res.json())
+        .then(data => {
+
+            let tabla = document.getElementById("tablaVentas");
+            tabla.innerHTML = "";
+
+            // 🔴 Si no existe
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            let fila = document.createElement("tr");
+
+            fila.innerHTML = `
+                <td>${data.id}</td>
+                <td>${data.nombre}</td>
+                <td>${data.producto}</td>
+                <td>${data.precio}</td>
+            `;
+
+            tabla.appendChild(fila);
+        })
+        .catch(error => console.log("ERROR:", error));
+}
+        function eliminarVenta() {
+        let id = prompt("Ingrese el ID de la venta a eliminar:");
+    if (!id) {
+        alert("Debe ingresar un ID");
+        return;
+    }
+    if (!confirm("¿Seguro que quieres eliminar esta venta?")) {
+        return;
+    }
+    fetch(`/ventas/${id}`, {
+        method: "DELETE"
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.mensaje);
+        cargarVentas(); // 🔥 recarga la tabla
+    })
+    .catch(error => console.log("ERROR:", error));
+}
+
+    </script>
+
+</body>
+</html>
