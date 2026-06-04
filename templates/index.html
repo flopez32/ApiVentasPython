@@ -5,19 +5,42 @@
 
     <!-- ✅ Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+body {
+    background: 
+        linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+        url("{{ url_for('static', filename='Diseño.png') }}") no-repeat center center fixed;
+    background-size: cover;
+}
+</style>
+
 </head>
 <body class="bg-light">
+    <div class="d-flex align-items-center bg-primary p-3 mb-3">
+
+    <!-- ✅ Logo -->
+    <img src="{{ url_for('static', filename='logo3.png') }}" 
+         style="width: 40px; margin-right: 10px;">
+
+    <!-- ✅ Título centrado automáticamente -->
+    <h3 class="text-white m-0 mx-auto">
+        Lechoneria Bucaneros
+    </h3>
+
+    <!-- ✅ Botón a la derecha -->
+    <button class="btn btn-light" onclick="cerrarSesion()">
+        Cerrar sesión
+    </button>
+
+</div>
 
     <div class="container mt-5">
-
-        <h1 class="text-center mb-4">🚀 API Ventas</h1>
-
         <!--  Botones  -->
         <div class="text-center mb-3">
             <button class="btn btn-primary" onclick="cargarVentas()">Cargar Ventas</button>
-            <button id="btnCrear" class="btn btn-primary" onclick="crearVenta()">Crear Venta</button>
-            <button id="btnBuscar" class="btn btn-primary" onclick="buscarVenta()">Buscar Venta</button>
-            <button id="btnEliminar" class="btn btn-primary" onclick="eliminarVenta()">Eliminar Ventas</button>
+            <button id="btnCrear" class="btn btn-success" onclick="crearVenta()">Crear Venta</button>
+            <button id="btnBuscar" class="btn btn-warning" onclick="buscarVenta()">Buscar Venta</button>
+            <button id="btnEliminar" class="btn btn-danger" onclick="eliminarVenta()">Eliminar Ventas</button>
         </div>
 
         <!--  TABLA  -->
@@ -151,6 +174,10 @@
         cargarVentas(); // 🔥 recarga la tabla
     })
     .catch(error => console.log("ERROR:", error));
+}
+        function cerrarSesion() {
+    localStorage.removeItem("token");
+    window.location.href = "/";
 }
 
     </script>
