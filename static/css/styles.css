@@ -1,0 +1,20 @@
+body {
+    background: 
+        linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+        url("/static/fondo.png") no-repeat center center fixed;
+    background-size: cover;
+}
+
+        
+.sidebar {
+    background-color: #1e1e2f;
+    height: 100vh;
+    padding: 15px;
+}
+
+table tbody tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+
+    
