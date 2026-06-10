@@ -16,5 +16,6 @@ class CConexion:
         except Exception as e:
             print("Error al conectar a la base de datos:", e)
             return None
-        
-    ConexionBaseDeDatos()  
+
+def get_connection():
+    return CConexion.ConexionBaseDeDatos()

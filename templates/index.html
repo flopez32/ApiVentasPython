@@ -16,34 +16,154 @@ body {
 
 </head>
 <body class="bg-light">
+
     <div class="d-flex align-items-center bg-primary p-3 mb-3">
+        <!-- ✅ Logo -->
+        <img src="{{ url_for('static', filename='logo3.png') }}" 
+            style="width: 40px; margin-right: 10px;">
+        <!-- ✅ Título centrado automáticamente -->
+        <h3 class="text-white m-0 mx-auto">
+            Lechoneria Bucaneros
+        </h3>
+        <span id="usuario" class="text-white me-3"></span>
+        <!-- ✅ Botón a la derecha -->
+        <button class="btn btn-light" onclick="cerrarSesion()">
+            Cerrar sesión
+        </button>
+        
 
-    <!-- ✅ Logo -->
-    <img src="{{ url_for('static', filename='logo3.png') }}" 
-         style="width: 40px; margin-right: 10px;">
+    </div>
 
-    <!-- ✅ Título centrado automáticamente -->
-    <h3 class="text-white m-0 mx-auto">
-        Lechoneria Bucaneros
-    </h3>
+    <div class="container-fluid">
+    <div class="row">
 
-    <!-- ✅ Botón a la derecha -->
-    <button class="btn btn-light" onclick="cerrarSesion()">
-        Cerrar sesión
-    </button>
+        <!-- ✅ MENU LATERAL -->
+        <div class="col-md-2 sidebar text-white">
+
+            <h5 class="text-center mt-3">Menú</h5>
+
+            <button class="btn btn-primary w-100 mb-2" onclick="cargarVentas()">
+                Cargar Ventas
+            </button>
+
+            <button id="btnCrear" class="btn btn-success w-100 mb-2" onclick="mostrarFormulario()">
+                Crear Venta
+            </button>
+
+            <button id="btnBuscar" class="btn btn-warning w-100 mb-2" onclick="buscarVenta()">
+                Buscar Venta
+            </button>
+
+            <button id="btnEliminar" class="btn btn-danger w-100 mb-2" onclick="eliminarVenta()">
+                Eliminar Venta
+            </button>
+
+            <button id="btnEliminar" class="btn btn-danger w-100 mb-2" onclick="eliminarVenta()">
+                Descargar Factura
+            </button>
+
+        </div>
+
+        <!-- ✅ CONTENIDO PRINCIPAL -->
+        <div class="col-md-10 p-4">
+
+    <div id="contenido">
+        <h3 class="text-white">Listado de Ventas</h3>
+
+        <table class="table table-bordered table-striped text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Facturas</th>
+                </tr>
+            </thead>
+            <tbody id="tablaVentas"></tbody>
+        </table>
+    </div>
 
 </div>
 
-    <div class="container mt-5">
-        <!--  Botones  -->
-        <div class="text-center mb-3">
-            <button class="btn btn-primary" onclick="cargarVentas()">Cargar Ventas</button>
-            <button id="btnCrear" class="btn btn-success" onclick="crearVenta()">Crear Venta</button>
-            <button id="btnBuscar" class="btn btn-warning" onclick="buscarVenta()">Buscar Venta</button>
-            <button id="btnEliminar" class="btn btn-danger" onclick="eliminarVenta()">Eliminar Ventas</button>
-        </div>
+    </div>
+</div>
+    
+</body>
+    <script>
 
-        <!--  TABLA  -->
+
+            let token = localStorage.getItem("token");
+            // ✅ validar sesión
+            if (!token) {
+                window.location.href = "/";
+            }
+
+            // ✅ decodificar token
+            let payload = JSON.parse(atob(token.split('.')[1]));
+
+            // ✅ obtener rol
+            let rol = payload.sub.rol;
+
+            // ✅ mostrar usuario SIEMPRE
+            document.getElementById("usuario").innerText =
+                "Bienvenido " + payload.sub.username;
+
+            // ✅ ocultar botones si es empleado
+            if (rol === "empleado") {
+                document.getElementById("btnBuscar").style.display = "none";
+                document.getElementById("btnEliminar").style.display = "none";
+            }
+
+            console.log("ROL:", rol);
+
+        function mostrarFormulario() {
+
+        let html = `
+            <h3 class="text-white">Crear Venta</h3>
+            <div class="card p-4">
+                <input id="nombre" class="form-control mb-2" placeholder="Nombre">
+                <input id="producto" class="form-control mb-2" placeholder="Producto">
+                <input id="precio" class="form-control mb-2" placeholder="Precio">
+                <input id="domicilio" class="form-control mb-2" placeholder="Domicilio">
+                <button class="btn btn-success" onclick="guardarVenta()">
+                    Guardar
+                </button>
+            </div>
+        `;
+        document.getElementById("contenido").innerHTML = html;
+    }
+            
+        function guardarVenta() {
+
+    let nombre = document.getElementById("nombre").value;
+    let producto = document.getElementById("producto").value;
+    let precio = document.getElementById("precio").value;
+    let domicilio = document.getElementById("domicilio").value;
+
+        fetch("/ventas", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+                nombre,
+                producto,
+                precio: parseFloat(precio),
+                domicilio
+            })
+        })
+        .then(res => res.json())
+        
+.then(data => {
+
+    alert(data.mensaje);
+
+    // ✅ Volver a mostrar la pantalla principal
+    document.getElementById("contenido").innerHTML = `
+        <h3 class="text-white">Listado de Ventas</h3>
+
         <table class="table table-bordered table-striped text-center">
             <thead class="table-dark">
                 <tr>
@@ -55,22 +175,12 @@ body {
             </thead>
             <tbody id="tablaVentas"></tbody>
         </table>
+    `;
 
-    </div>
+    // ✅ Ahora sí cargar datos
+    cargarVentas();
+});
 
-    <script>
-
-        //  obtener token
-        let token = localStorage.getItem("token");
-        // decodificar token
-        let payload = JSON.parse(atob(token.split('.')[1]));
-        // obtener rol
-        let rol = payload.sub.rol;
-        console.log("ROL:", rol);
-        // ocultar botones si es empleado
-         if (rol === "empleado") {
-            document.getElementById("btnBuscar").style.display = "none";
-            document.getElementById("btnEliminar").style.display = "none";
 }
 
         function cargarVentas() {
@@ -90,6 +200,7 @@ body {
                             <td>${venta.nombre}</td>
                             <td>${venta.producto}</td>
                             <td>${venta.precio}</td>
+                            <td><a href="/factura/${venta.id}" class="btn btn-sm btn-info" target="_blank">PDF</a></td>
                         `;
 
                         tabla.appendChild(fila);
@@ -181,6 +292,19 @@ body {
 }
 
     </script>
+    <style>
+        
+.sidebar {
+    background-color: #1e1e2f;
+    height: 100vh;
+    padding: 15px;
+}
 
-</body>
+table tbody tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+
+    </style>
+
 </html>

@@ -1,6 +1,7 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_file
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required,get_jwt_identity
 from Conexion import CConexion
+from pdf_service import generar_factura
 
 app = Flask(__name__)
 
@@ -145,6 +146,19 @@ def delete_venta(id):
 
     except Exception as e:
         return {"error": str(e)}, 500
+    
+
+@app.route('/factura/<int:id>')
+def factura(id):
+    venta = obtener_venta_por_id(id)
+
+    if not venta:
+        return {"error": "Venta no encontrada"}, 404
+
+    ruta = generar_factura(venta)
+
+    return send_file(ruta, as_attachment=True)
+
 
 # ✅ login - Autenticación de usuario
 @app.route("/login", methods=["POST"])
@@ -179,6 +193,28 @@ def login():
 
     return {"error": "Credenciales incorrectas ❌"}, 401
 
+def obtener_venta_por_id(id):
+    from Conexion import get_connection
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT id, nombre, producto, precio FROM Ventas_Mes WHERE id = ?", 
+        (id,)
+    )
+
+    row = cursor.fetchone()
+
+    if row:
+        return {
+            "id": row[0],
+            "nombre": row[1],
+            "producto": row[2],
+            "precio": row[3]
+        }
+
+    return None
 
 # ✅ Ejecutar app
 if __name__ == '__main__':
